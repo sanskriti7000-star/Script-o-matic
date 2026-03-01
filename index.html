@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Script-O-Matic</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="bg-[#F8F7F2] text-gray-900" x-data="app()" x-init="init()">
+
+    <!-- Alphabet Workshop (Onboarding) -->
+    <!-- Alphabet Workshop (Onboarding) -->
+    <div id="onboarding-section" x-show="step === 'onboarding'"
+        class="min-h-screen flex flex-col items-center bg-[#F8F7F2] overflow-y-auto" x-cloak>
+
+        <!-- Top Nav -->
+        <nav id="onboarding-nav" class="w-full max-w-2xl px-6 py-8 flex items-center justify-between">
+            <button @click="step = 'workshop'"
+                class="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm text-gray-400 hover:text-gray-900 transition-all">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </button>
+            <div class="text-center">
+                <h2 class="font-bold text-sm tracking-tight outfit">Letter Workshop</h2>
+                <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Handwriting</p>
+            </div>
+            <button @click="step = 'workshop'"
+                class="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm text-gray-400 hover:text-gray-900 transition-all">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+        </nav>
+
+        <div id="letter-workshop" class="max-w-md w-full text-center px-6 pb-20">
+            <h1 class="text-3xl font-extrabold outfit mb-12">Draw your<br>handwriting</h1>
+
+            <!-- Circular Drawing Zone -->
+            <div class="relative mb-12 group">
+                <div class="circular-zone">
+                    <canvas id="onboardingCanvas" class="mx-auto drawing-canvas w-full h-full"></canvas>
+                </div>
+                <!-- Large Background Letter -->
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none -z-10 opacity-5">
+                    <span class="text-[200px] font-light outfit" x-text="alphabet[currentIndex]"></span>
+                </div>
+
+                <div class="mt-8 flex items-center justify-center gap-6">
+                    <button @click="prevLetter" :disabled="currentIndex === 0"
+                        class="text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-gray-900 transition-colors disabled:opacity-30">Back</button>
+                    <div class="w-px h-4 bg-gray-200"></div>
+                    <button @click="clearCanvas"
+                        class="text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-gray-900 transition-colors">Clear</button>
+                    <div class="w-px h-4 bg-gray-200"></div>
+                    <button @click="saveAndNext"
+                        class="text-xs font-bold uppercase tracking-widest text-orange-500 hover:text-orange-600 transition-colors">
+                        <span x-text="currentIndex < 25 ? 'Next' : 'Finish'"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Alphabet Grid -->
+            <div class="alphabet-grid">
+                <template x-for="(char, index) in alphabet" :key="char">
+                    <div @click="selectLetter(index)" class="alphabet-item flex items-center justify-center"
+                        :class="{'active': currentIndex === index, 'completed': letters[char]}">
+                        <span x-text="char"></span>
+                    </div>
+                </template>
+            </div>
+
+            <button @click="step = 'workshop'"
+                class="mt-12 w-full bg-gray-900 text-white rounded-full py-4 font-bold text-sm hover:bg-black transition-all shadow-xl shadow-gray-200">
+                Done Drawing
+            </button>
+        </div>
+    </div>
+
+    <!-- The Workshop -->
+    <div id="main-app" x-show="step === 'workshop'" class="flex min-h-screen x-cloak bg-[#F8F7F2]">
+
+        <!-- Sidebar (Desktop Only) -->
+        <aside id="app-sidebar"
+            class="hidden lg:flex w-72 border-r border-gray-200 bg-white p-6 flex flex-col h-screen fixed overflow-y-auto">
+            <div class="flex items-center gap-3 mb-12">
+                <img src="logo.png" alt="Logo" class="w-10 h-10 object-contain">
+                <h2 class="text-lg font-bold outfit tracking-tight">Script-O-Matic</h2>
+            </div>
+
+            <div class="mb-10">
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Mood Board</h3>
+                <div class="grid grid-cols-1 gap-3">
+                    <template x-for="t in themes" :key="t.name">
+                        <button @click="theme = t.name"
+                            class="flex items-center gap-3 p-3 rounded-lg border-2 transition-all"
+                            :class="theme === t.name ? 'border-gray-900 bg-gray-100' : 'border-gray-100 hover:border-gray-200 bg-white'">
+                            <div class="w-6 h-6 rounded border border-black/5 shadow-sm"
+                                :style="`background-color: ${t.color}`"></div>
+                            <span class="text-sm font-medium" x-text="t.name"></span>
+                        </button>
+                    </template>
+                </div>
+            </div>
+
+            <div class="mt-auto pt-8 space-y-3">
+                <button @click="downloadImage" :disabled="isDownloading"
+                    class="w-full bg-gray-900 text-white rounded-lg py-3 font-semibold text-sm hover:bg-black transition-all shadow-lg shadow-gray-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                    <template x-if="isDownloading">
+                        <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                            </circle>
+                            <path class="opacity-75" fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                            </path>
+                        </svg>
+                    </template>
+                    <span x-text="isDownloading ? 'Processing...' : 'Download Note'"></span>
+                </button>
+                <div class="p-4 bg-gray-50 rounded-xl border border-gray-100 flex flex-col gap-2">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Your Handwriting</p>
+                    <button @click="showAlphabetGallery = true"
+                        class="w-full flex items-center justify-between text-left px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-200 transition-all">
+                        <span>View Alphabet</span>
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                            </path>
+                        </svg>
+                    </button>
+                    <button @click="noteText = ''"
+                        class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-red-500 hover:bg-gray-100 transition-all">
+                        Clear Message
+                    </button>
+                    <button @click="resetOnboarding"
+                        class="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-gray-400 hover:text-gray-900 transition-all mt-2 opacity-60">
+                        Reset Alphabet
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Top Nav (Mobile Only) -->
+        <nav id="mobile-nav"
+            class="lg:hidden fixed top-0 inset-x-0 h-16 bg-white border-b border-gray-100 px-6 flex items-center justify-between z-50">
+            <div class="flex items-center gap-2">
+                <img src="logo.png" alt="Logo" class="w-8 h-8 object-contain">
+                <span class="font-bold text-sm tracking-tight outfit text-gray-900">Script-O-Matic</span>
+            </div>
+            <button @click="downloadImage"
+                class="p-2 text-gray-900 font-bold text-xs uppercase tracking-wider transition-opacity active:opacity-50">Download</button>
+        </nav>
+
+        <!-- Main Content -->
+        <main id="editor-container"
+            class="lg:ml-72 flex-1 flex flex-col h-screen overflow-hidden pt-16 lg:pt-0 pb-32 lg:pb-0">
+            <div class="flex-1 p-6 lg:p-12 flex flex-col items-center justify-start overflow-y-auto">
+                <div class="max-w-3xl w-full">
+                    <h1 class="hidden lg:block text-gray-400 text-[10px] font-bold uppercase tracking-[0.3em] mb-6">Your
+                        Handwritten Note</h1>
+
+                    <!-- Paper Component -->
+                    <div @click="$refs.editor.focus()" id="captureArea"
+                        class="relative rounded-sm p-8 lg:p-16 min-h-[500px] lg:min-h-[700px] w-full shadow-2xl shadow-black/5 transition-all duration-700 cursor-text group"
+                        :style="`background-color: ${themes.find(t => t.name === theme).color}`">
+                        <!-- Guidelines -->
+                        <div class="absolute inset-0 opacity-[0.03] pointer-events-none"
+                            style="background-image: linear-gradient(#000 1px, transparent 1px); background-size: 100% 3rem;">
+                        </div>
+
+                        <div
+                            class="relative z-10 flex flex-wrap gap-x-[1px] lg:gap-x-[2px] gap-y-4 lg:gap-y-6 items-baseline leading-none">
+                            <template x-for="(char, index) in renderedChars" :key="index">
+                                <div :class="char === '\n' ? 'w-full h-6 lg:h-8' : 'inline-block'">
+                                    <template x-if="char === ' '">
+                                        <div class="w-6 lg:w-10"></div>
+                                    </template>
+                                    <template x-if="char !== ' ' && char !== '\n'">
+                                        <img :src="letters[char.toUpperCase()]"
+                                            class="h-6 lg:h-10 w-auto object-contain transition-all hover:scale-110"
+                                            style="filter: contrast(1.2) brightness(0.8) drop-shadow(0 1px 1px rgba(0,0,0,0.05));"
+                                            x-show="letters[char.toUpperCase()]">
+                                    </template>
+                                    <template x-if="char !== ' ' && char !== '\n' && !letters[char.toUpperCase()]">
+                                        <span class="text-xl lg:text-3xl outfit opacity-20" x-text="char"></span>
+                                    </template>
+                                </div>
+                            </template>
+
+                            <!-- Fake Cursor -->
+                            <div
+                                class="inline-block w-[2px] h-6 lg:h-8 bg-gray-900 animate-pulse ml-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            </div>
+                        </div>
+
+                        <!-- Hidden Textarea for Input -->
+                        <textarea x-ref="editor" x-model="noteText"
+                            class="absolute inset-0 opacity-0 cursor-text resize-none pointer-events-none"
+                            autofocus></textarea>
+                    </div>
+
+                    <p class="mt-8 text-center text-gray-300 text-[10px] lg:text-xs font-medium">Click on the paper to
+                        start typing</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Bottom Bar (Mobile Only Theme Selector) -->
+        <div id="mobile-theme-selector" class="lg:hidden fixed bottom-6 inset-x-6 z-50">
+            <div
+                class="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-gray-100 p-2 flex items-center justify-between">
+                <div class="flex gap-2 p-1">
+                    <template x-for="t in themes" :key="t.name">
+                        <button @click="theme = t.name"
+                            class="w-10 h-10 rounded-xl border-2 transition-all flex items-center justify-center font-bold text-[10px]"
+                            :class="theme === t.name ? 'border-gray-900 scale-110' : 'border-transparent'"
+                            :style="`background-color: ${t.color}`">
+                            <span x-show="theme === t.name" class="mix-blend-difference text-white">✓</span>
+                        </button>
+                    </template>
+                </div>
+                <div class="flex items-center">
+                    <button @click="showAlphabetGallery = true"
+                        class="p-4 text-gray-400 hover:text-gray-900 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
+                            </path>
+                        </svg>
+                    </button>
+                    <button @click="noteText = ''" class="p-4 text-gray-400 hover:text-red-500 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alphabet Gallery Modal -->
+        <div id="alphabet-gallery-modal" x-show="showAlphabetGallery" x-cloak
+            class="fixed inset-0 z-[100] flex items-center justify-center p-4 lg:p-8"
+            x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+            <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="showAlphabetGallery = false"></div>
+
+            <div class="relative bg-white w-full max-w-4xl max-h-full rounded-3xl shadow-2xl overflow-hidden flex flex-col"
+                x-transition:enter="transition ease-out duration-300 transform"
+                x-transition:enter-start="opacity-0 translate-y-8 scale-95"
+                x-transition:enter-end="opacity-100 translate-y-0 scale-100">
+
+                <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-bold outfit">Your Captured Alphabet</h2>
+                        <p class="text-sm text-gray-500">Every letter you draw is saved here.</p>
+                    </div>
+                    <button @click="showAlphabetGallery = false"
+                        class="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                        <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-6 lg:p-10">
+                    <div class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
+                        <template x-for="char in alphabet" :key="char">
+                            <div
+                                class="aspect-square bg-gray-50 rounded-2xl border border-gray-100 flex flex-col items-center justify-center p-2 group hover:border-gray-300 hover:bg-gray-100 transition-all">
+                                <div class="relative w-full h-full flex items-center justify-center">
+                                    <template x-if="letters[char]">
+                                        <img :src="letters[char]" class="max-w-full max-h-full object-contain">
+                                    </template>
+                                    <template x-if="!letters[char]">
+                                        <span class="text-3xl font-bold text-gray-200" x-text="char"></span>
+                                    </template>
+                                </div>
+                                <span class="text-[10px] font-bold text-gray-400 mt-2 uppercase">Letter <span
+                                        x-text="char"></span></span>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <div class="p-6 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+                    <button @click="showAlphabetGallery = false"
+                        class="px-6 py-2 rounded-xl text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors">Close</button>
+                    <button @click="showAlphabetGallery = false; resetOnboarding()"
+                        class="px-6 py-2 bg-red-50 text-red-600 rounded-xl text-sm font-bold hover:bg-red-100 transition-colors">Re-draw
+                        All</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

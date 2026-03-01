@@ -1,0 +1,19 @@
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Project specific
+node_modules/
+.npm/
+*.log
+.gemini/
+.agent/
+_agents/
+.agents/
+brain/
+/tmp/

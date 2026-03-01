@@ -1,0 +1,67 @@
+[x-cloak] {
+    display: none !important;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+.outfit {
+    font-family: 'Outfit', sans-serif;
+}
+
+.canvas-container {
+    position: relative;
+    cursor: crosshair;
+}
+
+.circular-zone {
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #f3f4f6;
+    margin: 0 auto;
+    position: relative;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.alphabet-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    max-width: 400px;
+    margin: 2rem auto;
+}
+
+.alphabet-item {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    background: white;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: 2px solid transparent;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+.alphabet-item:hover {
+    transform: scale(1.05);
+}
+
+.alphabet-item.active {
+    border-color: #f97316;
+    background: white;
+}
+
+.alphabet-item.completed {
+    background: #fef3c7;
+}
+
+.drawing-canvas {
+    touch-action: none;
+}
