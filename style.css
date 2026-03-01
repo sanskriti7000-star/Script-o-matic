@@ -10,6 +10,10 @@ body {
     font-family: 'Noto Serif', serif;
 }
 
+.montserrat {
+    font-family: 'Montserrat', sans-serif;
+}
+
 .canvas-container {
     position: relative;
     cursor: crosshair;
