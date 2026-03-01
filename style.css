@@ -7,7 +7,7 @@ body {
 }
 
 .outfit {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Noto Serif', serif;
 }
 
 .canvas-container {
@@ -60,6 +60,15 @@ body {
 
 .alphabet-item.completed {
     background: #fef3c7;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'Noto Serif', serif;
 }
 
 .drawing-canvas {
